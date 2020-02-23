@@ -13,9 +13,10 @@ import re
 from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.grid_search import GridSearchCV
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import classification_report
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.base import BaseEstimator, TransformerMixin
 import pickle
 
 def load_data(database_filepath):
@@ -47,6 +48,25 @@ def tokenize(text):
 
     return clean_tokens
 
+class MessageLengthExtractor(BaseEstimator, TransformerMixin):
+    def message_length(self, text):
+        '''
+        Returns the number of characters in text
+        '''
+        return len(text)
+    
+    def fit(self, x, y=None):
+        '''
+         Overriding function from baseclass, fits the object
+        '''
+        return self
+    
+    def transform(self, X):
+        '''
+         Overriding function from baseclass, transforms the object
+        '''
+        X_msg_len = pd.Series(X).apply(self.message_length)
+        return (pd.DataFrame(X_msg_len))
 
 def build_model():
     '''
@@ -55,17 +75,24 @@ def build_model():
     '''
     # Build a machine learning pipeline
     pipeline = Pipeline([
-        ('vect', CountVectorizer(tokenizer=tokenize)),
-        ('tfidf', TfidfTransformer()),
-        ('clf', MultiOutputClassifier(RandomForestClassifier()))])
+        ('features', FeatureUnion([
 
+            ('textpipeline', Pipeline([
+                ('vect', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf', TfidfTransformer())
+            ])),
 
+            ('mesg_len', MessageLengthExtractor())
+        ])),
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
+    ])
+    
     # specify parameters for grid search
     parameters = {
         'clf__estimator__min_samples_split': [2, 4],
-        'clf__estimator__max_features': ['log2', 'auto', 'sqrt', None],
-        'clf__estimator__criterion': ['gini', 'entropy'],
-        'clf__estimator__max_depth': [None, 25, 50, 100, 150, 200],
+        #'clf__estimator__max_features': ['log2', 'auto', 'sqrt', None],
+        #'clf__estimator__criterion': ['gini', 'entropy'],
+        'clf__estimator__max_depth': [None, 25, 50,], #, 150, 200],
         'clf__estimator__bootstrap': [True, False]
     }
     cv = GridSearchCV(estimator=pipeline, param_grid=parameters)
