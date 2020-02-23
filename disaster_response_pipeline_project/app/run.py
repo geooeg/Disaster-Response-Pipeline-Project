@@ -64,7 +64,7 @@ def index():
                 }
             }
         },
-                {
+        {
             'data': [
                 Bar(
                     x=request_type_index,
@@ -102,7 +102,7 @@ def index():
                     'title': "Type",
                 },
             }
-        }
+        },
     ]
     
     # encode plotly graphs in JSON
