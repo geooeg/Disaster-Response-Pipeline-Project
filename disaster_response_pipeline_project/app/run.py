@@ -63,6 +63,45 @@ def index():
                     'title': "Genre"
                 }
             }
+        },
+                {
+            'data': [
+                Bar(
+                    x=request_type_index,
+                    y=request_type_count,
+                    marker=request_colors
+                )
+            ],
+
+            'layout': {
+                'title': 'Most Common Request Messages',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Type of Request"
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    x=most_related_names,
+                    y=most_related,
+                    marker=mrn_colors
+                )
+                    ],
+
+            'layout': {
+                'title': 'Most Common Messages',
+                'yaxis': {
+                    'title': "Count",
+                    'showspikes':"true"
+                },
+                'xaxis': {
+                    'title': "Type",
+                },
+            }
         }
     ]
     
